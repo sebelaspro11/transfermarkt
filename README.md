@@ -1,1 +1,1 @@
-## transfermarkt player network from [transfermarkt.com](https://www.transfermarkt.com/)
+## Football team network from [transfermarkt.com](https://www.transfermarkt.com/)
