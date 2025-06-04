@@ -57,7 +57,7 @@ LEAGUE_URLS = {
     "Malaysia Super League": "https://www.transfermarkt.com/malaysia-super-league/startseite/wettbewerb/MYS1",
 }
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def get_teams_by_league(league_url):
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(league_url, headers=headers)
@@ -76,7 +76,7 @@ def get_teams_by_league(league_url):
                 teams[team_name] = full_url
     return teams
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def scrape_team(url):
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers)
@@ -123,11 +123,14 @@ st.subheader("Network Graph by Position, Nationality, Market Value & Age")
 #st.markdown("**Seria A**", unsafe_allow_html=True)
 
 selected_league = st.selectbox("Select League", list(LEAGUE_URLS.keys()))
-teams = get_teams_by_league(LEAGUE_URLS[selected_league])
+with st.spinner("🔄 Loading Data..."):
+    teams = get_teams_by_league(LEAGUE_URLS[selected_league])
+
 selected_team = st.selectbox("Select Team", list(teams.keys()))
 team_url = teams[selected_team]
 st.markdown(f"🔗 [View on Transfermarkt]({team_url})", unsafe_allow_html=True)
-df = scrape_team(team_url)
+with st.spinner("🔄 Loading Data..."):
+    df = scrape_team(team_url)
 
 # === Nationality Flattening ===
 expanded_rows = []
