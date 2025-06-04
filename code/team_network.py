@@ -208,7 +208,7 @@ if source_col != target_col:
         node["font"] = {"size": 20, "bold": True, "color": "black"}
 
     tmp_path = os.path.join(tempfile.gettempdir(), "network.html")
-    net_graph.write_html(tmp_path)
+    net_graph.write_html(tmp_path, local=False)
     with open(tmp_path, 'r', encoding='utf-8') as f:
         st.components.v1.html(f.read(), height=900, scrolling=True)
 else:
