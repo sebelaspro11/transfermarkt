@@ -331,6 +331,239 @@
 #         st.dataframe(df5)
 
 
+# import streamlit as st
+# import pandas as pd
+# import networkx as nx
+# from pyvis.network import Network
+# import tempfile
+# import os
+# from bs4 import BeautifulSoup
+# import requests
+# import pycountry
+
+# # --- Streamlit Page Config ---
+# st.set_page_config(page_title="Football Team Network", page_icon="⚽", layout="wide")
+
+# # === Custom Flag Handling ===
+# custom_country_emoji = {
+#     "England": "🇬🇧",
+#     "Scotland": "🏴🇲🇫",
+#     "Wales": "🏴🇲🇫",
+#     "Northern Ireland": "🇬🇧",
+#     "Kosovo": "🇽🇰",
+#     "Ivory Coast": "🇨🇭",
+#     "Congo": "🇨🇬",
+#     "DR Congo": "🇩🇴",
+#     "South Korea": "🇰🇷",
+#     "North Korea": "🇰🇵"
+# }
+
+# def country_to_emoji(country_name):
+#     if country_name in custom_country_emoji:
+#         return custom_country_emoji[country_name]
+#     try:
+#         country = pycountry.countries.get(name=country_name)
+#         if not country:
+#             for c in pycountry.countries:
+#                 if country_name.lower() in [c.name.lower(), getattr(c, 'official_name', '').lower()]:
+#                     country = c
+#                     break
+#         if country:
+#             code = country.alpha_2.upper()
+#             return chr(ord(code[0]) + 127397) + chr(ord(code[1]) + 127397)
+#     except:
+#         pass
+#     return "❓"  # fallback
+
+# def country_to_flag_url(country_name):
+#     try:
+#         country = pycountry.countries.get(name=country_name)
+#         if not country:
+#             for c in pycountry.countries:
+#                 if country_name.lower() in [c.name.lower(), getattr(c, 'official_name', '').lower()]:
+#                     country = c
+#                     break
+#         if country:
+#             code = country.alpha_2.lower()
+#             return f"https://flagcdn.com/32x24/{code}.png"
+#     except:
+#         return None
+
+# emoji_flag_mapping = {c.name: country_to_emoji(c.name) for c in pycountry.countries}
+# emoji_flag_mapping.update(custom_country_emoji)
+
+# # === League and Team scraping ===
+# LEAGUE_URLS = {
+#     "Premier League": "https://www.transfermarkt.com/premier-league/startseite/wettbewerb/GB1",
+#     "La Liga": "https://www.transfermarkt.com/laliga/startseite/wettbewerb/ES1",
+#     "Ligue 1": "https://www.transfermarkt.com/ligue-1/startseite/wettbewerb/FR1",
+#     "Serie A": "https://www.transfermarkt.com/serie-a/startseite/wettbewerb/IT1",
+#     "Bundesliga": "https://www.transfermarkt.com/bundesliga/startseite/wettbewerb/L1",
+#     "Malaysia Super League": "https://www.transfermarkt.com/malaysia-super-league/startseite/wettbewerb/MYS1",
+# }
+
+# @st.cache_data(show_spinner=False)
+# def get_teams_by_league(league_url):
+#     headers = {'User-Agent': 'Mozilla/5.0'}
+#     response = requests.get(league_url, headers=headers)
+#     if response.status_code != 200:
+#         st.error(f"Failed to fetch teams: {response.status_code}")
+#         return {}
+#     soup = BeautifulSoup(response.content, 'html.parser')
+#     teams = {}
+#     for td in soup.find_all('td', class_="hauptlink no-border-links"):
+#         a = td.find('a', href=True)
+#         if a:
+#             team_name = a.get('title', a.text.strip())
+#             relative_url = a['href']
+#             if "/startseite/verein" in relative_url:
+#                 full_url = "https://www.transfermarkt.com" + relative_url
+#                 teams[team_name] = full_url
+#     return teams
+
+# @st.cache_data(show_spinner=False)
+# def scrape_team(url):
+#     headers = {'User-Agent': 'Mozilla/5.0'}
+#     response = requests.get(url, headers=headers)
+#     if response.status_code != 200:
+#         st.error(f"Failed to load page: {response.status_code}")
+#         return pd.DataFrame()
+
+#     soup = BeautifulSoup(response.content, 'html.parser')
+#     table = soup.find('table', {'class': 'items'})
+#     rows = table.find('tbody').find_all('tr', recursive=False)
+
+#     players = []
+#     for row in rows:
+#         cols = row.find_all('td', recursive=False)
+#         if len(cols) < 5:
+#             continue
+
+#         jersey_number = cols[0].get_text(strip=True)
+#         name_cell = cols[1].find('td', class_='hauptlink')
+#         name = name_cell.find('a').get_text(strip=True) if name_cell and name_cell.find('a') else ''
+#         position_cell = cols[1].find_all('td')[-1]
+#         position = position_cell.get_text(strip=True) if position_cell else ''
+#         dob_age_text = cols[2].get_text(strip=True)
+#         dob, age = (dob_age_text.split('(')[0].strip(), dob_age_text.split('(')[-1].replace(')', '').strip()) if '(' in dob_age_text else (dob_age_text.strip(), '')
+#         nat_imgs = cols[3].find_all('img')
+#         nationality = ', '.join(img.get('title', '') for img in nat_imgs)
+#         market_value = cols[4].get_text(strip=True)
+
+#         players.append({
+#             "Jersey Number": jersey_number,
+#             "Name": name,
+#             "Position": position,
+#             "Date of Birth": dob,
+#             "Age": age,
+#             "Nationality": nationality,
+#             "Market Value": market_value
+#         })
+
+#     return pd.DataFrame(players)
+
+# # === UI ===
+# st.title("🔸 Football Squad Player Network")
+# st.subheader("Network Graph by Position, Nationality, Market Value & Age")
+
+# selected_league = st.selectbox("Select League", list(LEAGUE_URLS.keys()))
+# with st.spinner("🔄 Loading Data..."):
+#     teams = get_teams_by_league(LEAGUE_URLS[selected_league])
+
+# selected_team = st.selectbox("Select Team", list(teams.keys()))
+# team_url = teams[selected_team]
+# st.markdown(f"🔗 [View on Transfermarkt]({team_url})", unsafe_allow_html=True)
+# with st.spinner("🔄 Loading Data..."):
+#     df = scrape_team(team_url)
+
+# # === Flatten Nationalities ===
+# expanded_rows = []
+# for _, row in df.iterrows():
+#     for nat in [n.strip() for n in row["Nationality"].split(",")]:
+#         new_row = row.copy()
+#         new_row["Nationality"] = nat
+#         expanded_rows.append(new_row)
+# df_flat = pd.DataFrame(expanded_rows)
+
+# def parse_market_value(val):
+#     val = val.replace("€", "").lower().strip()
+#     if val == "-" or val == "":
+#         return 0
+#     try:
+#         return int(float(val.replace("m", "")) * 1_000_000) if "m" in val else int(float(val.replace("k", "")) * 1_000)
+#     except:
+#         return 0
+
+# df_flat["Market Value Num"] = df_flat["Market Value"].apply(parse_market_value)
+
+# # === Sidebar Filters ===
+# st.sidebar.header("Filter Players")
+# positions = sorted(df_flat["Position"].dropna().unique())
+# nations = sorted(df_flat["Nationality"].dropna().unique())
+# selected_positions = st.sidebar.multiselect("Positions", positions)
+# selected_nations = st.sidebar.multiselect("Nationalities", nations)
+
+# filtered_df = df_flat.copy()
+# if selected_positions:
+#     filtered_df = filtered_df[filtered_df["Position"].isin(selected_positions)]
+# if selected_nations:
+#     filtered_df = filtered_df[filtered_df["Nationality"].isin(selected_nations)]
+
+# # === Network Graph ===
+
+# options = ["Name", "Position", "Nationality", "Market Value", "Age"]
+# source_col = st.selectbox("Select Source Node", options, index=0)
+# target_col = st.selectbox("Select Target Node", options, index=2)
+
+# if source_col != target_col:
+#     rows = []
+#     for _, row in filtered_df.iterrows():
+#         targets = [val.strip() for val in str(row[target_col]).split(",")] if "," in str(row[target_col]) else [row[target_col]]
+#         for target in targets:
+#             rows.append({"Source": row[source_col], "Target": target})
+#     flat_edge_df = pd.DataFrame(rows)
+
+#     G = nx.Graph()
+#     for _, row in flat_edge_df.iterrows():
+#         G.add_node(row["Source"], type="source")
+#         G.add_node(row["Target"], type="target")
+#         G.add_edge(row["Source"], row["Target"])
+
+#     net_graph = Network(height="900px", width="100%", bgcolor="white")
+#     net_graph.from_nx(G)
+
+#     for node in net_graph.nodes:
+#         if node["id"] in flat_edge_df["Source"].values:
+#             match = filtered_df[filtered_df[source_col] == node["id"]].iloc[0]
+#             node["title"] = f"{source_col}: {node['id']}\nPosition: {match['Position']}\nAge: {match['Age']}\nNationality: {match['Nationality']}\nMarket Value: {match['Market Value']}"
+#             node["color"] = "orange"
+#             node["shape"] = "star"
+#         else:
+#             if target_col == "Nationality":
+#                 flag_url = country_to_flag_url(node["id"])
+#                 if flag_url:
+#                     node["shape"] = "image"
+#                     node["image"] = flag_url
+#                     node["label"] = node["id"]
+#                 else:
+#                     node["color"] = "#00fa9a"
+#                     node["shape"] = "ellipse"
+#             elif target_col == "Position":
+#                 node["color"] = "#00bfff"
+#                 node["shape"] = "diamond"
+#             else:
+#                 node["color"] = "#ff69b4"
+#                 node["shape"] = "box"
+#         node["size"] = 30
+#         node["font"] = {"size": 20, "bold": True, "color": "black"}
+
+#     tmp_path = os.path.join(tempfile.gettempdir(), "network.html")
+#     net_graph.write_html(tmp_path, local=False)
+#     with open(tmp_path, 'r', encoding='utf-8') as f:
+#         st.components.v1.html(f.read(), height=900, scrolling=True)
+# else:
+#     st.warning("⚠️ Source and Target cannot be the same.")
+
 import streamlit as st
 import pandas as pd
 import networkx as nx
@@ -346,14 +579,14 @@ st.set_page_config(page_title="Football Team Network", page_icon="⚽", layout="
 
 # === Custom Flag Handling ===
 custom_country_emoji = {
-    "England": "🇬🇧",
-    "Scotland": "🏴🇲🇫",
-    "Wales": "🏴🇲🇫",
-    "Northern Ireland": "🇬🇧",
+    "England": "🏴",
+    "Scotland": "🏴",
+    "Wales": "🏴",
+    "Northern Ireland": "🏴",
     "Kosovo": "🇽🇰",
-    "Ivory Coast": "🇨🇭",
+    "Ivory Coast": "🇨🇮",
     "Congo": "🇨🇬",
-    "DR Congo": "🇩🇴",
+    "DR Congo": "🇨🇩",
     "South Korea": "🇰🇷",
     "North Korea": "🇰🇵"
 }
@@ -373,9 +606,12 @@ def country_to_emoji(country_name):
             return chr(ord(code[0]) + 127397) + chr(ord(code[1]) + 127397)
     except:
         pass
-    return "❓"  # fallback
+    return "❓"
 
 def country_to_flag_url(country_name):
+    if country_name in custom_country_emoji:
+        country_flag = country_to_emoji(country_name)
+        return None
     try:
         country = pycountry.countries.get(name=country_name)
         if not country:
