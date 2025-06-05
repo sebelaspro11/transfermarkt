@@ -313,7 +313,7 @@ if not df.empty:
     # === Count Tables ===
     nationality_count = df_flat["Nationality"].value_counts().reset_index()
     nationality_count.columns = ["Nationality", "Count"]
-    nationality_count["Nationality"] = nationality_count["Nationality"].apply(lambda x: f"{emoji_flag_mapping.get(x, '')} {x}")
+    #nationality_count["Nationality"] = nationality_count["Nationality"].apply(lambda x: f"{emoji_flag_mapping.get(x, '')} {x}")
 
     # Recalculate Market Value and Age Group on original df
     df["Market Value Num"] = df["Market Value"].apply(parse_market_value)
@@ -343,7 +343,8 @@ if not df.empty:
         st.dataframe(df1)
 
     with tab2:
-        st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
+        # st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
+        st.dataframe(nationality_count)
 
     with tab3:
         df3 = position_count.reset_index(drop=True)
