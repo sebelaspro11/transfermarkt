@@ -859,22 +859,6 @@ def country_to_emoji(country_name):
         pass
     return "❓"
 
-# def country_to_flag_url(country_name):
-#     if country_name in custom_country_emoji:
-#         country_flag = country_to_emoji(country_name)
-#         return None
-#     try:
-#         country = pycountry.countries.get(name=country_name)
-#         if not country:
-#             for c in pycountry.countries:
-#                 if country_name.lower() in [c.name.lower(), getattr(c, 'official_name', '').lower()]:
-#                     country = c
-#                     break
-#         if country:
-#             code = country.alpha_2.lower()
-#             return f"https://flagcdn.com/32x24/{code}.png"
-#     except:
-#         return None
 
 def country_to_flag_url(country_name):
     if country_name in custom_country_flags:
@@ -1067,3 +1051,117 @@ if source_col != target_col:
         st.components.v1.html(f.read(), height=900, scrolling=True)
 else:
     st.warning("⚠️ Source and Target cannot be the same.")
+
+if not df.empty:
+    # === Flatten Nationalities ===
+    expanded_rows = []
+    for _, row in df.iterrows():
+        nationalities = [n.strip() for n in row["Nationality"].split(",")]
+        for nat in nationalities:
+            row_copy = row.copy()
+            row_copy["Nationality"] = nat
+            expanded_rows.append(row_copy)
+    df_flat = pd.DataFrame(expanded_rows)
+
+    # === Market Value Processing ===
+    def parse_market_value(val):
+        if val == "-" or val == "":
+            return 0
+        val = val.replace("€", "").lower().strip()
+        if "m" in val:
+            return int(float(val.replace("m", "")) * 1_000_000)
+        elif "k" in val:
+            return int(float(val.replace("k", "")) * 1_000)
+        else:
+            try:
+                return int(val)
+            except:
+                return 0
+
+    def market_tier(value):
+        if value >= 100_000_000:
+            return "Tier 1: >€100M"
+        elif value >= 50_000_000:
+            return "Tier 2: €50M - €100M"
+        elif value >= 10_000_000:
+            return "Tier 3: €10M - €50M"
+        elif value >= 5_000_000:
+            return "Tier 4: €5M - €10M"
+        elif value < 5_000_000:
+            return "Tier 5: <€5M"
+        else:
+            return "Unknown"
+
+    df_flat["Market Value Num"] = df_flat["Market Value"].apply(parse_market_value)
+    df_flat["Market Tier"] = df_flat["Market Value Num"].apply(market_tier)
+
+    # === Age Grouping ===
+    def age_group(age):
+        try:
+            age = int(age)
+            if age < 24:
+                return "15-23"
+            elif age < 30:
+                return "24-29"
+            elif age < 35:
+                return "30-34"
+            else:
+                return "35+"
+        except:
+            return "Unknown"
+
+    df_flat["Age Group"] = df_flat["Age"].apply(age_group)
+
+    # === Count Tables ===
+    nationality_count = df_flat["Nationality"].value_counts().reset_index()
+    nationality_count.columns = ["Nationality", "Count"]
+    nationality_count["Nationality"] = nationality_count["Nationality"].apply(lambda x: f"{emoji_flag_mapping.get(x, '')} {x}")
+
+    # Recalculate Market Value and Age Group on original df
+    df["Market Value Num"] = df["Market Value"].apply(parse_market_value)
+    df["Market Tier"] = df["Market Value Num"].apply(market_tier)
+    df["Age Group"] = df["Age"].apply(age_group)
+
+    # Now calculate counts based on original df
+    position_count = df["Position"].value_counts().reset_index()
+    position_count.columns = ["Position", "Count"]
+
+    market_tier_count = df["Market Tier"].value_counts().reset_index()
+    market_tier_count.columns = ["Market Tier", "Count"]
+
+    age_group_count = df["Age Group"].value_counts().reset_index()
+    age_group_count.columns = ["Age Group", "Count"]
+    
+        # === Tabs: Analytics ===
+    st.subheader("📊 Squad Composition")
+
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["🔍 Overall", "🌍 Nationality", "🏃 Position", "💰 Market Value", "🎂 Age Group"])
+
+    with tab1:
+        selected_columns = ["Name", "Position", "Date of Birth", "Age", "Nationality", "Market Value"]
+        df1 = df[selected_columns].reset_index(drop=True)
+        df1.index += 1
+        df1.index.name = "No"
+        st.dataframe(df1)
+
+    with tab2:
+        st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
+
+    with tab3:
+        df3 = position_count.reset_index(drop=True)
+        df3.index += 1
+        df3.index.name = "No"
+        st.dataframe(df3)
+
+    with tab4:
+        df4 = market_tier_count.reset_index(drop=True)
+        df4.index += 1
+        df4.index.name = "No"
+        st.dataframe(df4)
+
+    with tab5:
+        df5 = age_group_count.reset_index(drop=True)
+        df5.index += 1
+        df5.index.name = "No"
+        st.dataframe(df5)
+
