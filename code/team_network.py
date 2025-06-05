@@ -344,7 +344,11 @@ if not df.empty:
 
     with tab2:
         # st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
-        st.dataframe(nationality_count)
+        #st.dataframe(nationality_count)
+        df2 = nationality_count.reset_index(drop=True)
+        df2.index += 1
+        df2.index.name = "No"
+        st.dataframe(df2)
 
     with tab3:
         df3 = position_count.reset_index(drop=True)
