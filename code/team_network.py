@@ -148,7 +148,7 @@ def scrape_team(url):
     return pd.DataFrame(players)
 
 # === UI ===
-st.title("🔸 Football Squad Player Network")
+st.title("🕸️ Football Squad Player Network")
 st.subheader("Network Graph by Position, Nationality, Market Value & Age")
 
 selected_league = st.selectbox("Select League", list(LEAGUE_URLS.keys()))
