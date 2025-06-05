@@ -11,19 +11,19 @@ import pycountry
 # --- Streamlit Page Config ---
 st.set_page_config(page_title="Football Team Network", page_icon="⚽", layout="wide")
 
-# # === Custom Flag Handling ===
-# custom_country_emoji = {
-#     "England": "🏴",
-#     "Scotland": "🏴",
-#     "Wales": "🏴",
-#     "Northern Ireland": "🏴",
-#     "Kosovo": "🇽🇰",
-#     "Ivory Coast": "🇨🇮",
-#     "Congo": "🇨🇬",
-#     "DR Congo": "🇨🇩",
-#     "South Korea": "🇰🇷",
-#     "North Korea": "🇰🇵"
-# }
+# === Custom Flag Handling ===
+custom_country_emoji = {
+    "England": "🏴",
+    "Scotland": "🏴",
+    "Wales": "🏴",
+    "Northern Ireland": "🏴",
+    "Kosovo": "🇽🇰",
+    "Ivory Coast": "🇨🇮",
+    "Congo": "🇨🇬",
+    "DR Congo": "🇨🇩",
+    "South Korea": "🇰🇷",
+    "North Korea": "🇰🇵"
+}
 
 custom_country_flags = {
     "England": "https://upload.wikimedia.org/wikipedia/en/b/be/Flag_of_England.svg",
@@ -249,6 +249,7 @@ if source_col != target_col:
 else:
     st.warning("⚠️ Source and Target cannot be the same.")
 
+
 if not df.empty:
     # === Flatten Nationalities ===
     expanded_rows = []
@@ -309,21 +310,10 @@ if not df.empty:
 
     df_flat["Age Group"] = df_flat["Age"].apply(age_group)
 
-    # # === Count Tables ===
-
-
-    # def generate_flag_html(country_name):
-    #     url = country_to_flag_url(country_name)
-    #     if url:
-    #         return f'<img src="{url}" width="20"> {country_name}'
-    #     emoji = emoji_flag_mapping.get(country_name, '')
-    #     return f"{emoji} {country_name}"
-    
+    # === Count Tables ===
     nationality_count = df_flat["Nationality"].value_counts().reset_index()
     nationality_count.columns = ["Nationality", "Count"]
     nationality_count["Nationality"] = nationality_count["Nationality"].apply(lambda x: f"{emoji_flag_mapping.get(x, '')} {x}")
-
-
 
     # Recalculate Market Value and Age Group on original df
     df["Market Value Num"] = df["Market Value"].apply(parse_market_value)
@@ -353,8 +343,7 @@ if not df.empty:
         st.dataframe(df1)
 
     with tab2:
-        # st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
-        st.dataframe(nationality_count)
+        st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
 
     with tab3:
         df3 = position_count.reset_index(drop=True)
@@ -373,4 +362,3 @@ if not df.empty:
         df5.index += 1
         df5.index.name = "No"
         st.dataframe(df5)
-
