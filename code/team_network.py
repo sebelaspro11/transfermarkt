@@ -321,8 +321,7 @@ if not df.empty:
     
     nationality_count = df_flat["Nationality"].value_counts().reset_index()
     nationality_count.columns = ["Nationality", "Count"]
-    # Keep just the country name without flag
-    nationality_count["Nationality"] = nationality_count["Nationality"]
+    nationality_count["Nationality"] = nationality_count["Nationality"].apply(lambda x: f"{emoji_flag_mapping.get(x, '')} {x}")
 
 
 
