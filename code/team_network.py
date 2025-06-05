@@ -340,7 +340,7 @@ if not df.empty:
         df1 = df[selected_columns].reset_index(drop=True)
         df1.index += 1
         df1.index.name = "No"
-        st.dataframe(df1)
+        st.write(df1)
 
     with tab2:
         # st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
@@ -348,7 +348,7 @@ if not df.empty:
         df2 = nationality_count.reset_index(drop=True)
         df2.index += 1
         df2.index.name = "No"
-        st.dataframe(df2)
+        st.write(df2)
 
     with tab3:
         df3 = position_count.reset_index(drop=True)
