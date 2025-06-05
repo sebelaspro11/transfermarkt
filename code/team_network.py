@@ -323,6 +323,8 @@ if not df.empty:
     nationality_count = df_flat["Nationality"].value_counts().reset_index()
     nationality_count.columns = ["Nationality", "Count"]
     nationality_count["Nationality"] = nationality_count["Nationality"].apply(generate_flag_html)
+    st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
+
 
     # Recalculate Market Value and Age Group on original df
     df["Market Value Num"] = df["Market Value"].apply(parse_market_value)
