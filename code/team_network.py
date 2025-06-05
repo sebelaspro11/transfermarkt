@@ -310,19 +310,19 @@ if not df.empty:
     df_flat["Age Group"] = df_flat["Age"].apply(age_group)
 
     # # === Count Tables ===
-    # nationality_count = df_flat["Nationality"].value_counts().reset_index()
-    # nationality_count.columns = ["Nationality", "Count"]
-    # nationality_count["Nationality"] = nationality_count["Nationality"].apply(lambda x: f"{country_to_emoji.get(x, '')} {x}")
+
 
     def generate_flag_html(country_name):
         url = country_to_flag_url(country_name)
         if url:
             return f'<img src="{url}" width="20"> {country_name}'
-        return country_name
-
+        emoji = emoji_flag_mapping.get(country_name, '')
+        return f"{emoji} {country_name}"
+    
     nationality_count = df_flat["Nationality"].value_counts().reset_index()
     nationality_count.columns = ["Nationality", "Count"]
     nationality_count["Nationality"] = nationality_count["Nationality"].apply(generate_flag_html)
+
     st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
 
 
