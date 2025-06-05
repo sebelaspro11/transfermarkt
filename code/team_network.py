@@ -321,7 +321,8 @@ if not df.empty:
     
     nationality_count = df_flat["Nationality"].value_counts().reset_index()
     nationality_count.columns = ["Nationality", "Count"]
-    nationality_count["Nationality"] = nationality_count["Nationality"].apply(generate_flag_html)
+    # Keep just the country name without flag
+    nationality_count["Nationality"] = nationality_count["Nationality"]
 
 
 
