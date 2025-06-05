@@ -354,16 +354,16 @@ if not df.empty:
         df3 = position_count.reset_index(drop=True)
         df3.index += 1
         df3.index.name = "No"
-        st.dataframe(df3)
+        st.table(df3)
 
     with tab4:
         df4 = market_tier_count.reset_index(drop=True)
         df4.index += 1
         df4.index.name = "No"
-        st.dataframe(df4)
+        st.table(df4)
 
     with tab5:
         df5 = age_group_count.reset_index(drop=True)
         df5.index += 1
         df5.index.name = "No"
-        st.dataframe(df5)
+        st.table(df5)
