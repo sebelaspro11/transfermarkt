@@ -12,9 +12,9 @@ import pycountry
 st.set_page_config(page_title="Football Team Network", page_icon="⚽", layout="wide")
 hide_st_style = """
             <style>
-            MainMenu {visibility: hidden;}
+            #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
-            header {visibility: hidden;}
+            #header {visibility: hidden;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
@@ -39,11 +39,13 @@ custom_country_flags = {
     "Wales": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Flag_of_Wales.svg",
     "Northern Ireland": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Ulster_banner.svg",
     "Kosovo": "https://flagcdn.com/32x24/xk.png",
-    "Ivory Coast": "https://flagcdn.com/32x24/ci.png",
+    "Cote d'Ivoire": "https://flagcdn.com/32x24/ci.png",
     "Congo": "https://flagcdn.com/32x24/cg.png",
     "DR Congo": "https://flagcdn.com/32x24/cd.png",
-    "South Korea": "https://flagcdn.com/32x24/kr.png",
-    "North Korea": "https://flagcdn.com/32x24/kp.png"
+    "Korea": "https://flagcdn.com/32x24/kr.png",
+    "North Korea": "https://flagcdn.com/32x24/kp.png",
+    "Northern Ireland": "https://tmssl.akamaized.net//images/flagge/verysmall/192.png?lm=1520611569"
+    
 }
 
 
@@ -159,12 +161,25 @@ def scrape_team(url):
 st.title("🕸️ Football Squad Player Network")
 st.subheader("Network Graph by Position, Nationality, Market Value & Age")
 
+# === User-Defined Team URL ===
+st.sidebar.markdown("### 🔗 Other Team URL")
+
+# Sidebar content
+st.sidebar.markdown("##### Example: https://www.transfermarkt.com/malaysia/startseite/verein/15738")
+custom_team_url = st.sidebar.text_input("Paste Transfermarkt team URL", placeholder="https://www.transfermarkt.com/...")
+use_custom_url = custom_team_url.strip() != ""
+
 selected_league = st.selectbox("Select League", list(LEAGUE_URLS.keys()))
 with st.spinner("🔄 Loading Data..."):
     teams = get_teams_by_league(LEAGUE_URLS[selected_league])
 
-selected_team = st.selectbox("Select Team", list(teams.keys()))
-team_url = teams[selected_team]
+if use_custom_url:
+    team_url = custom_team_url.strip()
+    st.success("✅ Using custom team URL.")
+else:
+    selected_team = st.selectbox("Select Team", list(teams.keys()))
+    team_url = teams[selected_team]
+
 st.markdown(f"🔗 [View on Transfermarkt]({team_url})", unsafe_allow_html=True)
 with st.spinner("🔄 Loading Data..."):
     df = scrape_team(team_url)
@@ -348,7 +363,7 @@ if not df.empty:
         df1 = df[selected_columns].reset_index(drop=True)
         df1.index += 1
         df1.index.name = "No"
-        st.table(df1)
+        st.dataframe(df1)
 
     with tab2:
         # st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
@@ -356,22 +371,22 @@ if not df.empty:
         df2 = nationality_count.reset_index(drop=True)
         df2.index += 1
         df2.index.name = "No"
-        st.table(df2)
+        st.dataframe(df2)
 
     with tab3:
         df3 = position_count.reset_index(drop=True)
         df3.index += 1
         df3.index.name = "No"
-        st.table(df3)
+        st.dataframe(df3)
 
     with tab4:
         df4 = market_tier_count.reset_index(drop=True)
         df4.index += 1
         df4.index.name = "No"
-        st.table(df4)
+        st.dataframe(df4)
 
     with tab5:
         df5 = age_group_count.reset_index(drop=True)
         df5.index += 1
         df5.index.name = "No"
-        st.table(df5)
+        st.dataframe(df5)
