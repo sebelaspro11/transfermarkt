@@ -363,7 +363,7 @@ if not df.empty:
         df1 = df[selected_columns].reset_index(drop=True)
         df1.index += 1
         df1.index.name = "No"
-        st.dataframe(df1)
+        st.dataframe(df1, use_container_width=False)
 
     with tab2:
         # st.markdown(nationality_count.to_html(escape=False, index=False), unsafe_allow_html=True)
@@ -371,22 +371,22 @@ if not df.empty:
         df2 = nationality_count.reset_index(drop=True)
         df2.index += 1
         df2.index.name = "No"
-        st.dataframe(df2)
+        st.dataframe(df2, use_container_width=False)
 
     with tab3:
         df3 = position_count.reset_index(drop=True)
         df3.index += 1
         df3.index.name = "No"
-        st.dataframe(df3)
+        st.dataframe(df3, use_container_width=False)
 
     with tab4:
         df4 = market_tier_count.reset_index(drop=True)
         df4.index += 1
         df4.index.name = "No"
-        st.dataframe(df4)
+        st.dataframe(df4, use_container_width=False)
 
     with tab5:
         df5 = age_group_count.reset_index(drop=True)
         df5.index += 1
         df5.index.name = "No"
-        st.dataframe(df5)
+        st.dataframe(df5, use_container_width=False)
