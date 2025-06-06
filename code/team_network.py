@@ -9,7 +9,7 @@ import requests
 import pycountry
 
 # --- Streamlit Page Config ---
-st.set_page_config(page_title="Football Team Network", page_icon="⚽", layout="wide")
+st.set_page_config(page_title="Football Team Network", page_icon="⚽")
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
